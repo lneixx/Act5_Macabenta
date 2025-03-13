@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XML Slideshow</title>
+<style>
+* {box-sizing: border-box}
+body {font-family: Verdana, sans-serif; margin:0}
+.mySlides {display: none}
+img {vertical-align: middle; width: 100%;}
+
+/* Slideshow container */
+.slideshow-container {
+  max-width: 1000px;
+  position: relative;
+  margin: auto;
+}
+
+/* Navigation buttons */
+.prev, .next {
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  width: auto;
+  padding: 16px;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  transition: 0.6s ease;
+  border-radius: 0 3px 3px 0;
+  user-select: none;
+  background-color: rgba(0,0,0,0.6);
+}
+
+.next {
+  right: 0;
+  border-radius: 3px 0 0 3px;
+}
+
+.prev:hover, .next:hover {
+  background-color: rgba(0,0,0,0.8);
+}
+
+/* Caption text */
+.text {
+  color: #f2f2f2;
+  font-size: 18px;
+  padding: 8px 12px;
+  position: absolute;
+  bottom: 8px;
+  width: 100%;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Dots */
+.dot-container {
+  text-align: center;
+  padding: 10px;
+}
+
+.dot {
+  cursor: pointer;
+  height: 15px;
+  width: 15px;
+  margin: 0 5px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+  transition: background-color 0.6s ease;
+}
+
+.active, .dot:hover {
+  background-color: #717171;
+}
+
+/* Fading animation */
+.fade {
+  animation-name: fade;
+  animation-duration: 1.5s;
+}
+
+@keyframes fade {
+  from {opacity: .4} 
+  to {opacity: 1}
+}
+</style>
+</head>
+<body>
+
+<div class="slideshow-container" id="slideshow-container">
+  <a class="prev" onclick="plusSlides(-1)">❮</a>
+  <a class="next" onclick="plusSlides(1)">❯</a>
+</div>
+
+<div class="dot-container" id="dots-container"></div>
+
+<script>
+// JavaScript for loading XML and handling slideshow
+let slideIndex = 1;
+
+// Load XML using XMLHttpRequest (gagana kahit walang local server)
+function loadXML() {
+  let xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      let parser = new DOMParser();
+      let xmlDoc = parser.parseFromString(this.responseText, "text/xml");
+      const slides = xmlDoc.getElementsByTagName("slide");
+      const slideshowContainer = document.getElementById("slideshow-container");
+      const dotsContainer = document.getElementById("dots-container");
+
+      for (let i = 0; i < slides.length; i++) {
+        // Create slide div
+        let slideDiv = document.createElement("div");
+        slideDiv.className = "mySlides fade";
+
+        // Image
+        let img = document.createElement("img");
+        img.src = slides[i].getElementsByTagName("image")[0].textContent;
+        img.alt = "Slide " + (i + 1);
+
+        // Caption
+        let caption = document.createElement("div");
+        caption.className = "text";
+        caption.textContent = slides[i].getElementsByTagName("caption")[0].textContent;
+
+        // Append elements
+        slideDiv.appendChild(img);
+        slideDiv.appendChild(caption);
+        slideshowContainer.insertBefore(slideDiv, slideshowContainer.firstChild);
+
+        // pang navigation dot
+        let dot = document.createElement("span");
+        dot.className = "dot";
+        dot.onclick = function() { currentSlide(i + 1); };
+        dotsContainer.appendChild(dot);
+      }
+
+      // Show first slide
+      showSlides(slideIndex);
+    }
+  };
+  xhttp.open("GET", "slides.xml", true);
+  xhttp.send();
+}
+
+function plusSlides(n) {
+  showSlides(slideIndex += n);
+}
+
+function currentSlide(n) {
+  showSlides(slideIndex = n);
+}
+
+function showSlides(n) {
+  let slides = document.getElementsByClassName("mySlides");
+  let dots = document.getElementsByClassName("dot");
+
+  if (n > slides.length) { slideIndex = 1 }
+  if (n < 1) { slideIndex = slides.length }
+
+  for (let i = 0; i < slides.length; i++) {
+    slides[i].style.display = "none";
+  }
+  for (let i = 0; i < dots.length; i++) {
+    dots[i].className = dots[i].className.replace(" active", "");
+  }
+  
+  slides[slideIndex-1].style.display = "block";
+  dots[slideIndex-1].className += " active";
+}
+
+// Load XML when page loads
+window.onload = loadXML;
+</script>
+
+</body>
+</html>
